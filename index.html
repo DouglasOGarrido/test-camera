@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<title>Get Camera Test</title>
+
+	<meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1.0, user-scalable=no">
+	<meta name="description" content="Caja Los Héroes Admin by Paytech Processing">
+	<meta name="author" content="Paytech Processing">
+	<meta name="copyright" content="Caja Los Héroes y Paytech Processing">
+	<meta name="format-detection" content="telephone=no">
+</head>
+
+<body>
+</body>
+	<button onclick="getCamera()">Show Camera</button>
+	<button id="stop">Stop Camera</button>
+	<div id="camera-container" style="margin-top:16px;width:320px;height:280px;border:8px solid black">
+		<video id="cameraPreview" autoplay="true" style="width:320px;height:280px;background-color: gray;"></video>
+	</div>
+	<script>
+		var video = document.querySelector("#cameraPreview");
+		var stopVideo = document.querySelector("#stop");
+
+		function getCamera() {
+			console.log('getCamera ok');
+			getMedia({ video: true });
+		}
+
+		async function getMedia(constraints) {
+			let stream = null;
+
+			try {
+				stream = await navigator.mediaDevices.getUserMedia(constraints);
+				/* use the stream */
+				video.srcObject = stream;
+			} catch(err) {
+				/* handle the error */
+			}
+		}
+
+		function stop(e) {
+			var stream = video.srcObject;
+			var tracks = stream.getTracks();
+
+			for (var i = 0; i < tracks.length; i++) {
+				var track = tracks[i];
+				track.stop();
+			}
+
+			video.srcObject = null;
+		}
+		stopVideo.addEventListener("click", stop, false);
+	</script>
+</html>
