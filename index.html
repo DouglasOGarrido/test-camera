@@ -5,52 +5,77 @@
 	<meta charset="utf-8">
 	<title>Get Camera Test</title>
 
-	<meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1.0, user-scalable=no">
-	<meta name="description" content="Caja Los Héroes Admin by Paytech Processing">
-	<meta name="author" content="Paytech Processing">
-	<meta name="copyright" content="Caja Los Héroes y Paytech Processing">
-	<meta name="format-detection" content="telephone=no">
+	<style>
+		h1 {
+			margin: 0 0 24px 0;
+		}
+		select {
+			width: 150px;
+		}
+		video {
+			margin: 8px 0 0 0;
+		}
+	</style>
 </head>
 
 <body>
 </body>
-	<button onclick="getCamera()">Show Camera</button>
-	<button id="stop">Stop Camera</button>
-	<div id="camera-container" style="margin-top:16px;width:320px;height:280px;border:8px solid black">
-		<video id="cameraPreview" autoplay="true" style="width:320px;height:280px;background-color: gray;"></video>
-	</div>
+
+	<div class="select">
+    <label for="videoSource">Video source: </label><select id="videoSource"></select>
+  </div>
+
+  <video autoplay muted playsinline></video>
+
 	<script>
-		var video = document.querySelector("#cameraPreview");
-		var stopVideo = document.querySelector("#stop");
+		var videoElement = document.querySelector('video');
+		var videoSelect = document.querySelector('select#videoSource');
 
-		function getCamera() {
-			console.log('getCamera ok');
-			getMedia({ video: true });
+		videoSelect.onchange = getStream;
+
+		getStream().then(getDevices).then(gotDevices);
+
+		function getDevices() {
+			// AFAICT in Safari this only gets default devices until gUM is called :/
+			return navigator.mediaDevices.enumerateDevices();
 		}
 
-		async function getMedia(constraints) {
-			let stream = null;
-
-			try {
-				stream = await navigator.mediaDevices.getUserMedia(constraints);
-				/* use the stream */
-				video.srcObject = stream;
-			} catch(err) {
-				/* handle the error */
+		function gotDevices(deviceInfos) {
+			window.deviceInfos = deviceInfos; // make available to console
+			console.log('Available input and output devices:', deviceInfos);
+			for (const deviceInfo of deviceInfos) {
+				const option = document.createElement('option');
+				option.value = deviceInfo.deviceId;
+				if (deviceInfo.kind === 'videoinput') {
+					option.text = deviceInfo.label || `Camera ${videoSelect.length + 1}`;
+					videoSelect.appendChild(option);
+				}
 			}
 		}
 
-		function stop(e) {
-			var stream = video.srcObject;
-			var tracks = stream.getTracks();
-
-			for (var i = 0; i < tracks.length; i++) {
-				var track = tracks[i];
-				track.stop();
+		function getStream() {
+			if (window.stream) {
+				window.stream.getTracks().forEach(track => {
+					track.stop();
+				});
 			}
-
-			video.srcObject = null;
+			const videoSource = videoSelect.value;
+			const constraints = {
+				video: {deviceId: videoSource ? {exact: videoSource} : undefined}
+			};
+			return navigator.mediaDevices.getUserMedia(constraints).
+				then(gotStream).catch(handleError);
 		}
-		stopVideo.addEventListener("click", stop, false);
+
+		function gotStream(stream) {
+			window.stream = stream; // make stream available to console
+			videoSelect.selectedIndex = [...videoSelect.options].
+				findIndex(option => option.text === stream.getVideoTracks()[0].label);
+			videoElement.srcObject = stream;
+		}
+
+		function handleError(error) {
+			console.error('Error: ', error);
+		}
 	</script>
 </html>
