@@ -6,6 +6,9 @@
 	<title>Get Camera Test</title>
 
 	<style>
+		body {
+			font-size: 16px;
+		}
 		h1 {
 			margin: 0 0 24px 0;
 		}
@@ -26,10 +29,12 @@
   </div>
 
   <video autoplay muted playsinline></video>
-
+	
+	<div id="errors"></div>
 	<script>
 		var videoElement = document.querySelector('video');
 		var videoSelect = document.querySelector('select#videoSource');
+		var errorsElement = document.querySelector('#errors');
 
 		videoSelect.onchange = getStream;
 
@@ -75,6 +80,8 @@
 		}
 
 		function handleError(error) {
+			var textnode = document.createTextNode(error.toString());
+			errorsElement.appendChild(textnode);
 			console.error('Error: ', error);
 		}
 	</script>
