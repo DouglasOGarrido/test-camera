@@ -19,6 +19,7 @@
 			margin: 8px 0 0 0;
 		}
 	</style>
+	<script defer src="https://github.com/faisalman/ua-parser-js/blob/master/dist/ua-parser.min.js"></script>
 </head>
 
 <body>
@@ -31,10 +32,15 @@
   <video autoplay muted playsinline></video>
 	<br>
 	<br>
-	<p>Web RTC Supported:</p>
+	<p><strong>Web RTC Supported:<strong></p>
 	<p id="web-rtc"></p>
+	<p>
+		<strong>UA Parser:<strong>
+		<span id="has-ua"></span>
+	</p>
+	<ul id="browser-info"></ul>
 	
-	<div id="errors"></div>
+	<div id="errors"></div>	
 	<script>
 		var videoElement = document.querySelector('video');
 		var videoSelect = document.querySelector('select#videoSource');
@@ -88,7 +94,14 @@
 			errorsElement.appendChild(textnode);
 			console.error('Error: ', error);
 		}
+
+		function newLi(content) {
+    	const li = document.createElement("li");
+			li.appendChild(document.createTextNode(content));
+			return li;
+    }
 		
+		// webRTC check
 		let webRTCItems = '';
 		['RTCPeerConnection', 'webkitRTCPeerConnection', 'mozRTCPeerConnection', 'RTCIceGatherer'].forEach(function(item) {				
 			if (item in window) {
@@ -97,5 +110,31 @@
 		});
 		const webRtcElement = document.querySelector('#web-rtc');
 		if (webRtcElement) webRtcElement.innerHTML = webRTCItems;
+
+		// device check
+		let ua = new UAParser();
+		if (ua) {
+			const uaElement = document.querySelector('#has-ua');
+			uaElement.innerHTML = 'Yes';
+
+			const ul = document.getElementById("browser-info");			
+
+			let browser_name = ua.getBrowser().name;
+			ul.appendChild(newLi('Browser name: ' + browser_name));
+
+			let os_name = ua.getOS().name;
+			ul.appendChild(newLi('OS name: ' + os_name));
+			
+			let iphoneSupported = false;
+			if(os_name !== 'iOS'){ iphoneSupported = true; }else{
+				if(browser_name !== 'Mobile Safari'){
+					iphoneSupported = false;
+				}else{
+					iphoneSupported = true;
+				}
+			};
+			
+			ul.appendChild(newLi('iPhone Supported: ' + iphoneSupported));
+		}		
 	</script>
 </html>
