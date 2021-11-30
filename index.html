@@ -29,6 +29,10 @@
   </div>
 
   <video autoplay muted playsinline></video>
+	<br>
+	<br>
+	<p>Web RTC Supported:</p>
+	<p id="web-rtc"></p>
 	
 	<div id="errors"></div>
 	<script>
@@ -84,5 +88,14 @@
 			errorsElement.appendChild(textnode);
 			console.error('Error: ', error);
 		}
+		
+		let webRTCItems = '';
+		['RTCPeerConnection', 'webkitRTCPeerConnection', 'mozRTCPeerConnection', 'RTCIceGatherer'].forEach(function(item) {				
+			if (item in window) {
+				webRTCItems += item + ';';
+			}
+		});
+		const webRtcElement = document.querySelector('#web-rtc');
+		if (webRtcElement) webRtcElement.innerHTML = webRTCItems;
 	</script>
 </html>
